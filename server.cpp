@@ -14,11 +14,21 @@ list<UniSocket> clientConnections;
 void threadHandle(UniSocket usock) {
 	string msg;
 	
+	try {
+		cout << "hello " << usock.getIp() 
+			<< ":" << usock.getPeerPort() 
+			<< endl;
+	} catch(UniSocketException & e) {
+		cout << e._msg << endl;
+	}
+	
 	while(true) {
 		try {
 			msg = usock.recv(true);
 			stringstream ss;
-			ss << "client " << usock.getIp() << ":" << usock.getPeerPort() << " says: " << msg;
+			ss << "client " << usock.getIp() 
+				<< ":" << usock.getPeerPort() 
+				<< " says: " << msg;
 			
 			for (auto &so : clientConnections) {
 				so.send(ss.str());
@@ -26,12 +36,14 @@ void threadHandle(UniSocket usock) {
 			if (msg == (string) ":q") break;
 		} catch(UniSocketException & e) {
 			this_thread::sleep_for(chrono::microseconds(POLLINGMYSEC));
-			// hier muss server irgendwann eine testnachricht senden um verbindung zu testen oder sowas
+			/** @todo hier muss server irgendwann eine testnachricht 
+			 * senden um verbindung zu testen oder sowas ??
+			 */
 		}
 	}
 	
 	try {
-		cout << "bye " << usock.getIp() << ":" << usock.getPeerPort() << endl;
+		cout << "bye   " << usock.getIp() << ":" << usock.getPeerPort() << endl;
 		usock.close();
 	} catch(UniSocketException & e) {
 		cout << e._msg << endl;
