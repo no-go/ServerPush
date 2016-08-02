@@ -10,8 +10,8 @@ server:
 	g++ -Wall -std=c++11 -pthread -o serverLinux server.o lib/SocketWrapperLinux.o lib/UniSocket.o
 
 client:
-	g++ -Wall -c client.cpp
-	g++ -Wall -o clientLinux client.o lib/SocketWrapperLinux.o lib/UniSocket.o
+	g++ -Wall -std=c++11 -pthread -c client.cpp
+	g++ -Wall -std=c++11 -pthread -o clientLinux client.o lib/SocketWrapperLinux.o lib/UniSocket.o
 
 clean:
 	rm -f clientLinux serverLinux

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream> 
 #include <chrono>
 #include <thread>
 #include <cstdlib>
@@ -16,11 +17,13 @@ void threadHandle(UniSocket usock) {
 	while(true) {
 		try {
 			msg = usock.recv(true);
-			cout << "client "<< usock.getIp() << ":" << usock.getPeerPort() << " says: " << msg << endl;
+			stringstream ss;
+			ss << "client " << usock.getIp() << ":" << usock.getPeerPort() << " says: " << msg;
+			
 			for (auto &so : clientConnections) {
-				so.send(msg);
+				so.send(ss.str());
 			}
-			if (msg == (string) "x") break;
+			if (msg == (string) ":q") break;
 		} catch(UniSocketException & e) {
 			this_thread::sleep_for(chrono::microseconds(POLLINGMYSEC));
 			// hier muss server irgendwann eine testnachricht senden um verbindung zu testen oder sowas
