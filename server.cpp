@@ -17,10 +17,13 @@ void threadHandle(UniSocket usock) {
 		try {
 			msg = usock.recv(true);
 			cout << "client "<< usock.getIp() << ":" << usock.getPeerPort() << " says: " << msg << endl;
-			usock.send(msg);
+			for (auto &so : clientConnections) {
+				so.send(msg);
+			}
 			if (msg == (string) "x") break;
 		} catch(UniSocketException & e) {
 			this_thread::sleep_for(chrono::microseconds(POLLINGMYSEC));
+			// hier muss server irgendwann eine testnachricht senden um verbindung zu testen oder sowas
 		}
 	}
 	
