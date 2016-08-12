@@ -31,6 +31,7 @@ void threadHandle(UniSocket usock) {
 				<< " says: " << msg;
 			
 			for (auto &so : clientConnections) {
+				// Thread 4 "serverLinux" received signal SIGPIPE, Broken pipe. 
 				so.send(ss.str());
 			}
 			if (msg == (string) ":q") break;
@@ -39,6 +40,7 @@ void threadHandle(UniSocket usock) {
 			/** @todo hier muss server irgendwann eine testnachricht 
 			 * senden um verbindung zu testen oder sowas ??
 			 */
+			//cout << e._msg << endl;
 		}
 	}
 	

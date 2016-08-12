@@ -54,7 +54,7 @@ int SocketWrapper::getPeerPort(void) {
 
 void SocketWrapper::send(const string & data) {
 	string msg = to_string(data.length()) + HEADERSPLITTER + data;
-	::send(_socket, msg.c_str(), msg.length(), 0);
+	::send(_socket, msg.c_str(), msg.length(), MSG_NOSIGNAL);
 
 // testszenario fuer polling
 /*	string msg = to_string(data.length());
