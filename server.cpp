@@ -4,6 +4,7 @@
 #include <thread>
 #include <cstdlib>
 #include <list>
+#include <algorithm> // find()
 #include "lib/UniSocket.hpp"
 using namespace std;
     
@@ -13,6 +14,7 @@ list<UniSocket> clientConnections;
 
 void threadHandle(UniSocket usock) {
 	string msg;
+	bool newMessage;
 	
 	try {
 		cout << "hello " << usock.getIp() 
@@ -23,30 +25,60 @@ void threadHandle(UniSocket usock) {
 	}
 	
 	while(true) {
+		stringstream ss;
 		try {
 			msg = usock.recv(true);
-			stringstream ss;
 			ss << "client " << usock.getIp() 
 				<< ":" << usock.getPeerPort() 
 				<< " says: " << msg;
 			
-			for (auto &so : clientConnections) {
-				// Thread 4 "serverLinux" received signal SIGPIPE, Broken pipe. 
-				so.send(ss.str());
-			}
+			newMessage = true;
 			if (msg == (string) ":q") break;
 		} catch(UniSocketException & e) {
 			this_thread::sleep_for(chrono::microseconds(POLLINGMYSEC));
-			/** @todo hier muss server irgendwann eine testnachricht 
-			 * senden um verbindung zu testen oder sowas ??
-			 */
-			//cout << e._msg << endl;
+			newMessage = false;
+		}
+		
+		if (newMessage == false) continue;
+		
+		// need iterator to erase !!
+		//for (auto &so : clientConnections) { so.send(ss.str()); ....
+		
+		for (auto i = clientConnections.begin(); i != clientConnections.end(); ) {
+			try {
+				cout << "      try to send '" << msg << "' to " 
+					<< i->getIp() << ":" << i->getPeerPort() << endl;
+				i->send(ss.str());
+				++i;
+			} catch (UniSocketException & e) {
+				cout << "ups!  " 
+					<< i->getIp() << ":" << i->getPeerPort() 
+					<< " " << e._msg << endl;
+				i = clientConnections.erase(i);
+			}
 		}
 	}
 	
 	try {
 		cout << "bye   " << usock.getIp() << ":" << usock.getPeerPort() << endl;
+		
+		auto iter = find_if(
+			clientConnections.begin(), 
+			clientConnections.end(),
+			[&]( UniSocket us ) {
+				if (
+					( usock.getIp() == us.getIp() ) &&
+					( usock.getPeerPort() == us.getPeerPort() )
+				) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		);
+		
 		usock.close();
+		clientConnections.erase(iter);
 	} catch(UniSocketException & e) {
 		cout << e._msg << endl;
 	}
